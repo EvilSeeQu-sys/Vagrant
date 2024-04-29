@@ -19,22 +19,8 @@ Vagrant.configure("2") do |config|
     ansible.galaxy_roles_path = "/etc/ansible/roles"
     ansible.galaxy_command = "sudo ansible-galaxy install --role-file=%{role_file} --roles-path=%{roles_path}"
     ansible.playbook = "playbooks/init.yml"
+#    ansible.verbose = "vvv"
   end
-
-  # Shell script to configure ssh key and ssh config for user panda
-  config.vm.provision "shell", inline: <<-SHELL
-    mkdir -p /home/panda/.ssh
-    cp /vagrant/PandaCore/panda-ssh /home/panda/.ssh/id_rsa_git
-    chown panda:panda /home/panda/.ssh/id_rsa_git
-    chmod 600 /home/panda/.ssh/id_rsa_git
-
-    # Create and configure ssh config to use the specific key for git operations
-    echo "Host github.com" > /home/panda/.ssh/config
-    echo "  IdentityFile /home/panda/.ssh/id_rsa_git" >> /home/panda/.ssh/config
-    echo "  StrictHostKeyChecking no" >> /home/panda/.ssh/config
-    chown panda:panda /home/panda/.ssh/config
-    chmod 644 /home/panda/.ssh/config
-  SHELL
 
   if VAGRANT_COMMAND == "ssh"
     config.ssh.username = 'panda'

@@ -33,6 +33,95 @@
         user: panda
         state: present
         key: "{{ lookup('file', '/home/vagrant/.ssh/authorized_keys') }}"
+
+
+    - name: Create .ssh directory for user panda
+      file:
+        path: /home/panda/.ssh
+        state: directory
+        owner: panda
+        group: panda
+        mode: 0700
+
+    - name: Copy id_rsa_git key for user panda
+      copy:
+        src: /vagrant/PandaCore/panda-ssh
+        dest: /home/panda/.ssh/id_rsa_git
+        owner: panda
+        group: panda
+        mode: 0600
+
+    - name: Configure SSH config file for user panda
+      blockinfile:
+        path: /home/panda/.ssh/config
+        block: |
+          Host github.com
+            IdentityFile /home/panda/.ssh/id_rsa_git
+            StrictHostKeyChecking no
+        owner: panda
+        group: panda
+        mode: 0644
+        create: yes
+
+    - name: Ensure panda has access to .ansible/tmp directory
+      ansible.builtin.file:
+        path: /home/panda/.ansible/tmp
+        state: directory
+        mode: '0770'
+        owner: panda
+        group: panda
+      become: true
+
+    - name: Change to panda user directory
+      ansible.builtin.shell:
+        cmd: cd /home/panda
+      args:
+        executable: /bin/bash
+
+    - name: Clone Backend repository via SSH using specific SSH key
+      ansible.builtin.shell:
+        cmd: |
+          GIT_SSH_COMMAND="ssh -i /home/panda/.ssh/id_rsa_git -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git clone git@github.com:EvilSeeQu-sys/Backend.git /home/panda/Backend
+      args:
+        executable: /bin/bash
+
+    - name: Clone Frontend repository via SSH using specific SSH key
+      ansible.builtin.shell:
+        cmd: |
+          GIT_SSH_COMMAND="ssh -i /home/panda/.ssh/id_rsa_git -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git clone git@github.com:EvilSeeQu-sys/Frontend.git /home/panda/Frontend
+      args:
+        executable: /bin/bash
+
+    - name: Clone Infrastructure repository via SSH using specific SSH key
+      ansible.builtin.shell:
+        cmd: |
+          GIT_SSH_COMMAND="ssh -i /home/panda/.ssh/id_rsa_git -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git clone git@github.com:EvilSeeQu-sys/Infrastructure.git /home/panda/Infrastructure
+      args:
+        executable: /bin/bash
+
   roles:
     - geerlingguy.docker
+
+  tasks:
+    - name: Build Docker image for Jenkins
+      ansible.builtin.shell:
+        cmd: docker build -t jenkins-custom:latest .
+        chdir: /home/panda/Infrastructure/jenkins_controller
+
+    - name: Run Jenkins container in detached mode
+      ansible.builtin.shell:
+        cmd: docker run -d --name jenkins-controller -p 8080:8080 -p 50000:50000 jenkins-custom:latest
+        chdir: /home/panda/Infrastructure/jenkins_controller
+      register: docker_run_result
+      failed_when: '"Unable to find image" in docker_run_result.stderr or "Error" in docker_run_result.stderr'
+      changed_when: '"Up to date" not in docker_run_result.stdout'
+
+    - name: Ensure the Jenkins container is restarted if it was already running
+      ansible.builtin.shell:
+        cmd: docker rm -f jenkins-controller; docker run -d --name jenkins-controller -p 8080:8080 -p 50000:50000 jenkins-custom:latest
+        chdir: /home/panda/Infrastructure/jenkins_controller
+      when: docker_run_result is failed
+
+#  roles:
+#     - geerlingguy.docker
 
