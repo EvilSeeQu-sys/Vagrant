@@ -1,0 +1,38 @@
+---
+- name: 
+  hosts: all
+  become: true
+  vars:
+    docker_users:
+      - panda
+      - vagrant
+    docker_daemon_options:
+      insecure-registries : ["192.168.44.44:8082"]
+  pre_tasks:
+    - name: Install packages
+      package:
+        name:
+          - unzip
+          - net-tools
+        state: present
+    - name: Create panda group
+      group: 
+        name: panda 
+        state: present
+
+    - name: Create panda user belonging to sudo and panda groups
+      user:
+        name: panda
+        shell: /bin/bash
+        groups: 
+          - panda
+          - sudo
+
+    - name: Set authorized key for user panda copying it from vagrant user
+      authorized_key:
+        user: panda
+        state: present
+        key: "{{ lookup('file', '/home/vagrant/.ssh/authorized_keys') }}"
+  roles:
+    - geerlingguy.docker
+
