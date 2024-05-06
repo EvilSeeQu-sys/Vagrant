@@ -110,7 +110,7 @@
 
     - name: Run Jenkins container in detached mode
       ansible.builtin.shell:
-        cmd: docker run -d --name jenkins-controller -p 8080:8080 -p 50000:50000 jenkins-custom:latest
+        cmd: docker run -d --name jenkins-controller -p 8880:8080 -p 50000:50000 jenkins-custom:latest
         chdir: /home/panda/Infrastructure/jenkins_controller
       register: docker_run_result
       failed_when: '"Unable to find image" in docker_run_result.stderr or "Error" in docker_run_result.stderr'
