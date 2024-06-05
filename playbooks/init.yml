@@ -1,5 +1,5 @@
 ---
-- name: 
+- name:
   hosts: all
   become: true
   vars:
@@ -16,15 +16,15 @@
           - net-tools
         state: present
     - name: Create panda group
-      group: 
-        name: panda 
+      group:
+        name: panda
         state: present
 
     - name: Create panda user belonging to sudo and panda groups
       user:
         name: panda
         shell: /bin/bash
-        groups: 
+        groups:
           - panda
           - sudo
 
@@ -101,6 +101,8 @@
 
   roles:
     - geerlingguy.docker
+    - deekayen.awscli2
+    - diodonfrost.terraform
 
 #  tasks:
 #    - name: Build Docker image for Jenkins
