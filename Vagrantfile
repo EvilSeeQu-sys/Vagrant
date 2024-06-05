@@ -30,6 +30,10 @@ Vagrant.configure("2") do |config|
 #    ansible.verbose = "vvv"
   end
 
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.playbook = "playbooks/infrastructure.yml"
+  end
+
   if VAGRANT_COMMAND == "ssh"
     config.ssh.username = 'panda'
   end
