@@ -13,6 +13,17 @@ Vagrant.configure("2") do |config|
   # Synchronizacja folderu z kluczem SSH
   config.vm.synced_folder "/home/evilseequ/bigspace/vagrant/", "/vagrant/PandaCore"
 
+  config.vm.provision "ansible_local" do |ansible|
+    ansible.galaxy_role_file = 'requirements.yml'
+    ansible.galaxy_roles_path = "/etc/ansible/roles"
+    ansible.galaxy_command = "sudo ansible-galaxy install --role-file=%{role_file} --roles-path=%{roles_path}"
+    ansible.playbook = "playbooks/clone_roles.yml"
+    ansible.extra_vars = {
+      git_repository: "https://github.com/EvilSeeQu-sys/Ansible_roles",
+      git_branch: "main"
+    }
+  end
+
   # Provisions with ansible
   config.vm.provision "ansible_local" do |ansible|
     ansible.galaxy_role_file = 'requirements.yml'

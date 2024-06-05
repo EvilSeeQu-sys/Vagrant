@@ -1,0 +1,33 @@
+---
+- name: Clone Ansible roles repository
+  hosts: all
+  become: yes
+  vars:
+    git_repository: "https://github.com/EvilSeeQu-sys/Ansible_roles"
+    git_branch: "main"
+
+  tasks:
+    - name: Create roles directory
+      file:
+        path: /etc/ansible/roles
+        state: directory
+        mode: '0755'
+
+    - name: Ensure roles directory is empty
+      file:
+        path: /etc/ansible/roles
+        state: absent
+      ignore_errors: yes
+
+    - name: Create roles directory again
+      file:
+        path: /etc/ansible/roles
+        state: directory
+        mode: '0755'
+
+    - name: Clone the repository
+      git:
+        repo: "{{ git_repository }}"
+        dest: /etc/ansible/roles
+        version: "{{ git_branch }}"
+        force: yes
