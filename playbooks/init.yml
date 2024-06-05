@@ -83,3 +83,4 @@
     - deekayen.awscli2
     - diodonfrost.terraform
     - packages
+    - infrastructure
