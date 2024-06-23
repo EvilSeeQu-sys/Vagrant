@@ -6,6 +6,8 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |v|
     v.memory = 16240
     v.cpus = 6
+#    v.customize ["createhd", "--filename", "disk.vdi", "--size", 102400]
+#    v.customize ["storageattach", :id, "--storagectl", "SATA Controller", "--port", 1, "--device", 0, "--type", "hdd", "--medium", "disk.vdi"]
   end
 
   config.vm.network "private_network", ip: "192.168.56.115"
